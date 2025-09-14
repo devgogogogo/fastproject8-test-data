@@ -13,7 +13,7 @@ public class JpaConfig {
 
     @Bean
     public AuditorAware<String> auditor() {
-        return () -> Optional.of("kwi");
+        return () -> Optional.of("kwiHyeon");
     }
 }
 
