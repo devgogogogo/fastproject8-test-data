@@ -21,25 +21,34 @@ import java.util.Set;
 
 @Getter
 @ToString(callSuper = true)
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"userId", "schemaName"})
+        },
+        indexes = {
+                @Index(columnList = "createdAt"),
+                @Index(columnList = "modifiedAt")
+        }
+)
 @Entity
-@NoArgsConstructor
 public class TableSchema extends AuditingFields {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    private String schemaName;
-    @Setter
-    private String userId;
-    @Setter
-    private LocalDateTime exportedAt;
+    @Setter @Column(nullable = false) private String schemaName;
+    @Setter @Column(nullable = false) private String userId;
 
+    @Setter private LocalDateTime exportedAt;
 
     @ToString.Exclude
+    @OrderBy("fieldOrder ASC")
     @OneToMany(mappedBy = "tableSchema", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<SchemaField> schemaFields = new LinkedHashSet<>();
+
+
+    protected TableSchema() {}
 
     public TableSchema(String schemaName, String userId) {
         this.schemaName = schemaName;
@@ -51,18 +60,18 @@ public class TableSchema extends AuditingFields {
         return new TableSchema(schemaName, userId);
     }
 
-    public void markExportedAt() {
-        this.exportedAt = LocalDateTime.now();
+
+    public void markExported() {
+        exportedAt = LocalDateTime.now();
     }
 
     public boolean isExported() {
         return exportedAt != null;
     }
 
-
     public void addSchemaField(SchemaField schemaField) {
-        schemaFields.add(schemaField);
         schemaField.setTableSchema(this);
+        schemaFields.add(schemaField);
     }
 
     public void addSchemaFields(Collection<SchemaField> schemaFields) {
@@ -79,12 +88,13 @@ public class TableSchema extends AuditingFields {
         if (this == o) return true;
         if (!(o instanceof TableSchema that)) return false;
 
-        if (that.getId() == null) {
+        if (this.getId() == null) {
             return Objects.equals(this.getSchemaName(), that.getSchemaName()) &&
                     Objects.equals(this.getUserId(), that.getUserId()) &&
                     Objects.equals(this.getExportedAt(), that.getExportedAt()) &&
                     Objects.equals(this.getSchemaFields(), that.getSchemaFields());
         }
+
         return Objects.equals(this.getId(), that.getId());
     }
 
@@ -93,6 +103,8 @@ public class TableSchema extends AuditingFields {
         if (getId() == null) {
             return Objects.hash(getSchemaName(), getUserId(), getExportedAt(), getSchemaFields());
         }
+
         return Objects.hash(getId());
     }
+
 }

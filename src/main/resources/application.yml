@@ -1,7 +1,11 @@
+debug: false
+
 logging:
   level:
-    com.fastcampus.testdata: debug
+    uno.fastcampus.testdata: debug
     org.springframework.web.servlet: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.test.context.transaction.TransactionContext: debug
 
 spring:
   application.name: test-data
@@ -15,14 +19,11 @@ spring:
     hibernate.ddl-auto: create
     show-sql: true
     properties:
-     hibernate.format_sql: true
-  sql.init.mode: always
+      hibernate.format_sql: true
+    sql.init.mode: always
 
 ---
 
 spring:
   config.activate.on-profile: test
-  datasource:
-    url: jdbc:h2:men:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE
-    username: SA
-    password:
+  datasource.url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE

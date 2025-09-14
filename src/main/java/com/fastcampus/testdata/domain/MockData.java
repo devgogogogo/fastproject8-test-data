@@ -17,9 +17,8 @@ import java.util.Objects;
  */
 @Getter
 @ToString
-@NoArgsConstructor
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"mockDataType","mockDataValue"}) //동일한 타입에 대해서 자료는 하나만 있어야 한다.
+        @UniqueConstraint(columnNames = {"mockDataType", "mockDataValue"})
 })
 @Entity
 public class MockData {
@@ -28,13 +27,11 @@ public class MockData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Column(nullable = false)
-    private MockDataType mockDataType;
+    @Setter @Column(nullable = false) @Enumerated(EnumType.STRING) private MockDataType mockDataType;
+    @Setter @Column(nullable = false, length = 1000) private String mockDataValue;
 
-    @Setter
-    @Column(nullable = false)
-    private String mockDataValue;
+
+    protected MockData() {}
 
     public MockData(MockDataType mockDataType, String mockDataValue) {
         this.mockDataType = mockDataType;
@@ -48,13 +45,14 @@ public class MockData {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MockData mockData)) return false;
+        if (!(o instanceof MockData that)) return false;
 
-        if (getId() == null) {
-           return Objects.equals(getMockDataType(), mockData.getMockDataType()) &&
-                   Objects.equals(getMockDataValue(), mockData.getMockDataValue());
+        if (this.getId() == null) {
+            return Objects.equals(this.getMockDataType(), that.getMockDataType()) &&
+                    Objects.equals(this.getMockDataValue(), that.getMockDataValue());
         }
-        return Objects.equals(getId(), mockData.getId());
+
+        return Objects.equals(this.getId(), that.getId());
     }
 
     @Override
@@ -62,6 +60,8 @@ public class MockData {
         if (getId() == null) {
             return Objects.hash(getMockDataType(), getMockDataValue());
         }
+
         return Objects.hash(getId());
     }
+
 }
