@@ -1,6 +1,7 @@
 package com.fastcampus.testdata.controller;
 
 import com.fastcampus.testdata.config.SecurityConfig;
+import com.fastcampus.testdata.util.FormDataEncoder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @DisplayName("[Controller] 테이블 스키마 컨트롤러 테스트")
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, FormDataEncoder.class})
 @WebMvcTest
 public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
 
