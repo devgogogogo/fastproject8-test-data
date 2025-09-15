@@ -22,13 +22,8 @@ import java.util.Set;
 @Getter
 @ToString(callSuper = true)
 @Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"userId", "schemaName"})
-        },
-        indexes = {
-                @Index(columnList = "createdAt"),
-                @Index(columnList = "modifiedAt")
-        }
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"userId", "schemaName"})},
+        indexes = {@Index(columnList = "createdAt"), @Index(columnList = "modifiedAt")}
 )
 @Entity
 public class TableSchema extends AuditingFields {

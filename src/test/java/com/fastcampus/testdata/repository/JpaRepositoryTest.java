@@ -1,13 +1,10 @@
-package com.fastcampus.testdata.domain.repository;
+package com.fastcampus.testdata.repository;
 
 
 import com.fastcampus.testdata.domain.MockData;
 import com.fastcampus.testdata.domain.SchemaField;
 import com.fastcampus.testdata.domain.TableSchema;
 import com.fastcampus.testdata.domain.constant.MockDataType;
-import com.fastcampus.testdata.repository.MockDataRepository;
-import com.fastcampus.testdata.repository.SchemaFieldRepository;
-import com.fastcampus.testdata.repository.TableSchemaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.InstanceOfAssertFactories;
