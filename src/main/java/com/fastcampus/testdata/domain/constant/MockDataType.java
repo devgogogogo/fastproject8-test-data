@@ -3,7 +3,10 @@ package com.fastcampus.testdata.domain.constant;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -27,6 +30,15 @@ public enum MockDataType {
     private final Set<String> requiredOptions;
     private final MockDataType baseType;
 
+    private static final List<MockDataTypeObject> objects = Arrays
+            .stream(MockDataType.values())
+            .map(MockDataType::toObject)
+            .toList();
+
+    public static List<MockDataTypeObject> toObjects() {
+        return objects;
+    }
+
     public boolean isBaseType() {
         return baseType == null;
     }
@@ -43,6 +55,7 @@ public enum MockDataType {
             String name,
             Set<String> requiredOptions,
             String baseType
-    ) {}
+    ) {
+    }
 
 }

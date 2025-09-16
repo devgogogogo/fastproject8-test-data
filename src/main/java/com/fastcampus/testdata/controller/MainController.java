@@ -12,6 +12,6 @@ public class MainController {
 
     @GetMapping("/")
     public String mainPage() {
-        return "index";
+        return "forward:/table-schema";
     }
 }

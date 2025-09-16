@@ -1,15 +1,25 @@
 package com.fastcampus.testdata.controller;
 
 import com.fastcampus.testdata.config.SecurityConfig;
+import com.fastcampus.testdata.domain.constant.ExportFileType;
+import com.fastcampus.testdata.domain.constant.MockDataType;
+import com.fastcampus.testdata.dto.request.SchemaFieldRequest;
+import com.fastcampus.testdata.dto.request.TableSchemaExportRequest;
+import com.fastcampus.testdata.dto.request.TableSchemaRequest;
 import com.fastcampus.testdata.util.FormDataEncoder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
+import static org.awaitility.Awaitility.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,9 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("[Controller] 테이블 스키마 컨트롤러 테스트")
 @Import({SecurityConfig.class, FormDataEncoder.class})
 @WebMvcTest
-public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
+public record TableSchemaControllerTest(
+        @Autowired MockMvc mockMvc,
+        @Autowired FormDataEncoder formDataEncoder,
+        @Autowired ObjectMapper mapper
+) {
 
-    @DisplayName("[GET] 테이블 스키마 페이지 -> 테이블 스키마 뷰 (정상)")
+    @DisplayName("[GET] 테이블 스키마 조회 -> 비로그인 최고 진입(정상)")
     @Test
     void given_whenRequesting_thenShowTableschemaView() throws Exception {
         //Given
@@ -30,6 +44,9 @@ public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
         mockMvc.perform(get("/table-schema"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(model().attributeExists("tableSchema"))
+                .andExpect(model().attributeExists("mockDataType"))
+                .andExpect(model().attributeExists("fileType"))
                 .andExpect(view().name("table-schema"));
     }
 
@@ -44,13 +61,23 @@ public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
     @DisplayName("[POST] 테이블 스키마 생성, 변경 (정상)")
     @Test
     void givenTableSchemaRequest_whenCreatingOrUpdating_thenRedirectsToTableSchemaView() throws Exception {
+        TableSchemaRequest request = TableSchemaRequest.of(
+                "test_schema",
+                List.of(
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        SchemaFieldRequest.of("name", MockDataType.NAME, 2, 10, null, null),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
+                )
+        );
+
         mockMvc.perform(
                         post("/table-schema")
-                                .content("sample data") // 여기는 나중에 바꿔야함
+                                .content(formDataEncoder.encode(request)) // 여기는 나중에 바꿔야함
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                                 .with(csrf())
                 )
                 .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attribute("tableSchemaRequest", request))
                 .andExpect(redirectedUrl("/table-schema"));
     }
 
@@ -71,6 +98,7 @@ public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
     void givenAuthenticatedUserAndSchemaName_whenDeleting_thenRedirectsToTableSchemaView() throws Exception {
         //Given
         String schemaName = "test_schema";
+
         //When & Then
         mockMvc.perform(
                         post("/table-schema/my-schemas/{schemaName}", schemaName)
@@ -84,12 +112,23 @@ public record TableSchemaControllerTest(@Autowired MockMvc mockMvc) {
     @Test
     void givenTableSchema_whenDownloading_thenReturnsFile() throws Exception {
         //Given
+        TableSchemaExportRequest request = TableSchemaExportRequest.of(
+                "test",
+                77,
+                ExportFileType.JSON,
+                List.of(
+                        SchemaFieldRequest.of("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        SchemaFieldRequest.of("name", MockDataType.STRING, 1, 0, "option", "well"),
+                        SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
+                )
+        );
 
+        String queryParam = formDataEncoder.encode(request, false);
         //When & Then
-        mockMvc.perform(get("/table-schema/export"))
+        mockMvc.perform(get("/table-schema/export?" + queryParam))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
-                .andExpect(header().string("Content-Disposition", "attachment; filename=table-schema.txt"))
-                .andExpect(content().string("download complete!")); //TODO 나중에 데이터 바꿔야 함.
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=table-schema.txt"))
+                .andExpect(content().json(mapper.writeValueAsString(request)));
     }
 }
