@@ -65,7 +65,7 @@
                 </tr>
                 </thead>
                 <tbody class="list bg-white divide-y divide-gray-200">
-                <tr th:each="tableSchema : ${tableSchema}">
+                <tr th:each="tableSchema : ${tableSchemas}">
                     <td class="schema-name px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:underline">
                         <a th:href="@{/table-schema(schemaName=${tableSchema.schemaName})}" th:text="${tableSchema.schemaName}">sample_schema</a>
                     </td>

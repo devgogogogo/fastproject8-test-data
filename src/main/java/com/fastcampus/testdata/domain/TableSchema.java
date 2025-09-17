@@ -2,7 +2,6 @@ package com.fastcampus.testdata.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -22,8 +21,13 @@ import java.util.Set;
 @Getter
 @ToString(callSuper = true)
 @Table(
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"userId", "schemaName"})},
-        indexes = {@Index(columnList = "createdAt"), @Index(columnList = "modifiedAt")}
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"userId", "schemaName"})
+        },
+        indexes = {
+                @Index(columnList = "createdAt"),
+                @Index(columnList = "modifiedAt")
+        }
 )
 @Entity
 public class TableSchema extends AuditingFields {

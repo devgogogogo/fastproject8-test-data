@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 @DataJpaTest
 class TableSchemaRepositoryTest {
 
-    @Autowired
-    private TableSchemaRepository sut;
+    @Autowired private TableSchemaRepository sut;
 
     @DisplayName("사용자 식별자와 페이징 정보가 주어지면, 페이징된 테이블 스키마 목록을 반환한다.")
     @Test

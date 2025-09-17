@@ -49,7 +49,6 @@ public class SchemaField extends AuditingFields {
     public static SchemaField of(String fieldName, MockDataType mockDataType, Integer fieldOrder, Integer blankPercent, String typeOptionJson, String forceValue) {
         return new SchemaField(fieldName, mockDataType, fieldOrder, blankPercent, typeOptionJson, forceValue);
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

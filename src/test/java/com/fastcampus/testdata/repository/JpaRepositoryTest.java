@@ -45,7 +45,6 @@ class JpaRepositoryTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    @DisplayName("selectTest")
     void selectTest() {
         // Given
 
@@ -71,7 +70,6 @@ class JpaRepositoryTest {
     }
 
     @Test
-    @DisplayName("insertTest")
     void insertTest() {
         // Given
         TableSchema tableSchema = TableSchema.of("test_schema", "uno");
@@ -102,7 +100,6 @@ class JpaRepositoryTest {
     }
 
     @Test
-    @DisplayName("updateTest")
     void updateTest() {
         TableSchema tableSchema = tableSchemaRepository.findAll().getFirst();
         tableSchema.setSchemaName("test_modified");
@@ -123,7 +120,6 @@ class JpaRepositoryTest {
     }
 
     @Test
-    @DisplayName("deleteTest")
     void deleteTest() {
         // Given
         TableSchema tableSchema = tableSchemaRepository.findAll().getFirst();

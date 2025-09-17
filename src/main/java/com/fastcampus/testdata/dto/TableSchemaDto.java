@@ -17,14 +17,15 @@ public record TableSchemaDto(
         LocalDateTime createdAt,
         String createdBy,
         LocalDateTime modifiedAt,
-        String modifiedBy) {
+        String modifiedBy
+) {
 
     public static TableSchemaDto of(Long id, String schemaName, String userId, LocalDateTime exportedAt, Set<SchemaFieldDto> schemaFields, LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
-        return new TableSchemaDto(id,schemaName,userId,exportedAt,schemaFields,createdAt,createdBy,modifiedAt,modifiedBy);
+        return new TableSchemaDto(id, schemaName, userId, exportedAt, schemaFields, createdAt, createdBy, modifiedAt, modifiedBy);
     }
 
     public static TableSchemaDto of(String schemaName, String userId, LocalDateTime exportedAt, Set<SchemaFieldDto> schemaFields) {
-        return new TableSchemaDto(null,schemaName,userId,exportedAt,schemaFields,null,null,null,null);
+        return new TableSchemaDto(null, schemaName, userId, exportedAt, schemaFields, null, null, null, null);
     }
 
     public static TableSchemaDto fromEntity(TableSchema entity) {
@@ -44,8 +45,21 @@ public record TableSchemaDto(
     }
 
     public TableSchema createEntity() {
-        TableSchema entity = TableSchema.of(this.schemaName, this.userId);
+        TableSchema entity = TableSchema.of(schemaName, userId);
         entity.addSchemaFields(schemaFields.stream().map(SchemaFieldDto::createEntity).toList());
+
+        return entity;
+    }
+
+    public TableSchema updateEntity(TableSchema entity) {
+        if (schemaName != null) { entity.setSchemaName(schemaName); }
+        if (userId != null) { entity.setUserId(userId); }
+        entity.setExportedAt(exportedAt);
+        if (schemaFields != null) {
+            entity.clearSchemaFields();
+            entity.addSchemaFields(schemaFields.stream().map(SchemaFieldDto::createEntity).toList());
+        }
+
         return entity;
     }
 

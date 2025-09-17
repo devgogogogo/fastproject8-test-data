@@ -24,7 +24,8 @@ record UserAccountControllerTest(@Autowired MockMvc mvc) {
     @Test
     void givenAuthenticatedUser_whenRequesting_thenShowsMyAccountView() throws Exception {
         // Given
-        GithubUser githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+        var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+
         // When & Then
         mvc.perform(
                         get("/my-account")
@@ -36,4 +37,5 @@ record UserAccountControllerTest(@Autowired MockMvc mvc) {
                 .andExpect(model().attribute("email", githubUser.email()))
                 .andExpect(view().name("my-account"));
     }
+
 }

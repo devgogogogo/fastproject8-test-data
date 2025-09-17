@@ -8,6 +8,8 @@ import com.fastcampus.testdata.dto.request.SchemaFieldRequest;
 import com.fastcampus.testdata.dto.request.TableSchemaExportRequest;
 import com.fastcampus.testdata.dto.request.TableSchemaRequest;
 import com.fastcampus.testdata.dto.security.GithubUser;
+import com.fastcampus.testdata.service.SchemaExportService;
+import com.fastcampus.testdata.service.TableSchemaService;
 import com.fastcampus.testdata.util.FormDataEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -18,13 +20,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,6 +44,8 @@ class TableSchemaControllerTest {
     @Autowired private FormDataEncoder formDataEncoder;
     @Autowired private ObjectMapper mapper;
 
+    @MockitoBean private TableSchemaService tableSchemaService;
+    @MockitoBean private SchemaExportService schemaExportService;
 
     @DisplayName("[GET] 테이블 스키마 조회, 비로그인 최초 진입 (정상)")
     @Test
@@ -55,6 +60,7 @@ class TableSchemaControllerTest {
                 .andExpect(model().attributeExists("mockDataTypes"))
                 .andExpect(model().attributeExists("fileTypes"))
                 .andExpect(view().name("table-schema"));
+        then(tableSchemaService).shouldHaveNoInteractions();
     }
 
     @DisplayName("[GET] 테이블 스키마 조회, 로그인 + 특정 테이블 스키마 (정상)")
@@ -63,6 +69,7 @@ class TableSchemaControllerTest {
         // Given
         var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
         var schemaName = "test_schema";
+        given(tableSchemaService.loadMySchema(githubUser.id(), schemaName)).willReturn(TableSchemaDto.of(schemaName, githubUser.id(), null, Set.of()));
 
         // When & Then
         mvc.perform(
@@ -78,6 +85,7 @@ class TableSchemaControllerTest {
                 .andExpect(model().attributeExists("fileTypes"))
                 .andExpect(content().string(containsString(schemaName))) // html 전체 검사하므로 정확하지 않은 테스트 방식
                 .andExpect(view().name("table-schema"));
+        then(tableSchemaService).should().loadMySchema(githubUser.id(), schemaName);
     }
 
     @DisplayName("[POST] 테이블 스키마 생성, 변경 (정상)")
@@ -93,6 +101,7 @@ class TableSchemaControllerTest {
                         SchemaFieldRequest.of("age", MockDataType.NUMBER, 3, 20, null, null)
                 )
         );
+        willDoNothing().given(tableSchemaService).upsertTableSchema(request.toDto(githubUser.id()));
 
         // When & Then
         mvc.perform(
@@ -103,7 +112,8 @@ class TableSchemaControllerTest {
                                 .with(oauth2Login().oauth2User(githubUser))
                 )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlTemplate("/table-schema?schemaName={schemaName}", request.schemaName()));
+                .andExpect(redirectedUrlTemplate("/table-schema?schemaName={schemaName}", request.getSchemaName()));
+        then(tableSchemaService).should().upsertTableSchema(request.toDto(githubUser.id()));
     }
 
     @DisplayName("[GET] 내 스키마 목록 조회 (비로그인)")
@@ -115,6 +125,7 @@ class TableSchemaControllerTest {
         mvc.perform(get("/table-schema/my-schemas"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/oauth2/authorization/github"));
+        then(tableSchemaService).shouldHaveNoInteractions();
     }
 
     @DisplayName("[GET] 내 스키마 목록 조회 (정상)")
@@ -122,6 +133,7 @@ class TableSchemaControllerTest {
     void givenAuthenticatedUser_whenRequesting_thenShowsMySchemaView() throws Exception {
         // Given
         var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
+        given(tableSchemaService.loadMySchemas(githubUser.id())).willReturn(List.of());
 
         // When & Then
         mvc.perform(
@@ -132,6 +144,7 @@ class TableSchemaControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(model().attribute("tableSchemas", List.of()))
                 .andExpect(view().name("my-schemas"));
+        then(tableSchemaService).should().loadMySchemas(githubUser.id());
     }
 
     @DisplayName("[POST] 내 스키마 삭제 (정상)")
@@ -140,6 +153,7 @@ class TableSchemaControllerTest {
         // Given
         var githubUser = new GithubUser("test-id", "test-name", "test@email.com");
         String schemaName = "test_schema";
+        willDoNothing().given(tableSchemaService).deleteTableSchema(githubUser.id(), schemaName);
 
         // When & Then
         mvc.perform(
@@ -149,6 +163,7 @@ class TableSchemaControllerTest {
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/table-schema/my-schemas"));
+        then(tableSchemaService).should().deleteTableSchema(githubUser.id(), schemaName);
     }
 
     @DisplayName("[GET] 테이블 스키마 파일 다운로드, 비로그인 (정상)")
@@ -167,6 +182,8 @@ class TableSchemaControllerTest {
         );
         String queryParam = formDataEncoder.encode(request, false);
         String expectedBody = "id,name,age\n1,uno,20";
+        given(schemaExportService.export(request.getFileType(), request.toDto(null), request.getRowCount()))
+                .willReturn(expectedBody);
 
         // When & Then
         mvc.perform(get("/table-schema/export?" + queryParam))
@@ -174,6 +191,7 @@ class TableSchemaControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=test.csv"))
                 .andExpect(content().string(expectedBody));
+        then(schemaExportService).should().export(request.getFileType(), request.toDto(null), request.getRowCount());
     }
 
     @DisplayName("[GET] 테이블 스키마 파일 다운로드, 로그인 (정상)")
@@ -193,6 +211,8 @@ class TableSchemaControllerTest {
         );
         String queryParam = formDataEncoder.encode(request, false);
         String expectedBody = "id,name,age\n1,uno,20";
+        given(schemaExportService.export(request.getFileType(), request.toDto(githubUser.id()), request.getRowCount()))
+                .willReturn(expectedBody);
 
         // When & Then
         mvc.perform(
@@ -203,6 +223,7 @@ class TableSchemaControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=test.csv"))
                 .andExpect(content().string(expectedBody));
+        then(schemaExportService).should().export(request.getFileType(), request.toDto(githubUser.id()), request.getRowCount());
     }
 
 }

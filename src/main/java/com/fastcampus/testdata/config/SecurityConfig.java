@@ -20,8 +20,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/", "table-schema", "table-schema/export")
-                        .permitAll()
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/",
+                                "table-schema",
+                                "table-schema/export"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(withDefaults())
@@ -35,4 +40,5 @@ public class SecurityConfig {
 
         return userRequest -> GithubUser.from(delegate.loadUser(userRequest).getAttributes());
     }
+
 }

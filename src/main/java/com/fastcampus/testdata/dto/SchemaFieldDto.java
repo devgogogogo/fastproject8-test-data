@@ -3,7 +3,6 @@ package com.fastcampus.testdata.dto;
 import com.fastcampus.testdata.domain.SchemaField;
 import com.fastcampus.testdata.domain.constant.MockDataType;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
