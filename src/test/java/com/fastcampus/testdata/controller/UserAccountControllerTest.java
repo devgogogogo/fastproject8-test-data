@@ -2,7 +2,6 @@ package com.fastcampus.testdata.controller;
 
 
 import com.fastcampus.testdata.config.SecurityConfig;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,10 +26,12 @@ public record UserAccountControllerTest(@Autowired MockMvc mvc) {
         //Given
 
         //When & then
-        mvc.perform(get("/my-account").with(user("username")))
+        mvc.perform(get("/my-account"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(model().attributeExists("nickname"))
+                .andExpect(model().attributeExists("email"))
                 .andExpect(view().name("my-account"));
-
     }
+
 }
