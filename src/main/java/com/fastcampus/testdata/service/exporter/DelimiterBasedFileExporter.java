@@ -2,8 +2,10 @@ package com.fastcampus.testdata.service.exporter;
 
 import com.fastcampus.testdata.dto.SchemaFieldDto;
 import com.fastcampus.testdata.dto.TableSchemaDto;
+import com.fastcampus.testdata.service.generator.MockDataGeneratorContext;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

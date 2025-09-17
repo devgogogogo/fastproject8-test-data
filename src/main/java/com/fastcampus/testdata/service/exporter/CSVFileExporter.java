@@ -1,6 +1,7 @@
 package com.fastcampus.testdata.service.exporter;
 
 import com.fastcampus.testdata.domain.constant.ExportFileType;
+import com.fastcampus.testdata.service.generator.MockDataGeneratorContext;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -3,16 +3,14 @@ package com.fastcampus.testdata.service.exporter;
 import com.fastcampus.testdata.domain.constant.ExportFileType;
 import com.fastcampus.testdata.dto.SchemaFieldDto;
 import com.fastcampus.testdata.dto.TableSchemaDto;
+import com.fastcampus.testdata.service.generator.MockDataGeneratorContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Slf4j
