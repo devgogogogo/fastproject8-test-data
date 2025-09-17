@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.awaitility.Awaitility.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,6 +48,29 @@ public record TableSchemaControllerTest(
                 .andExpect(model().attributeExists("mockDataType"))
                 .andExpect(model().attributeExists("fileType"))
                 .andExpect(view().name("table-schema"));
+    }
+
+    @DisplayName("[GET] 테이블 스키마 조회, 로그인 + 특정 테이블 스키마 (정상)")
+    @Test
+    void givenAuthenticatedUserAndSchemaName_whenRequesting_thenShowsTableSchemaView() throws Exception {
+        // Given
+
+        String schemaName = "test_schema";
+
+        // When & Then
+        mockMvc.perform(
+                        get("/table-schema")
+                                .queryParam("schemaName", schemaName)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(model().attributeExists("tableSchema"))
+//                .andExpect(model().attribute("tableSchema", hasProperty("schemaName", is(schemaName)))) // dto가 record여서 불가능한 방식
+                .andExpect(model().attributeExists("mockDataTypes"))
+                .andExpect(model().attributeExists("fileTypes"))
+                .andExpect(content().string(containsString(schemaName))) // html 전체 검사하므로 정확하지 않은 테스트 방식
+                .andExpect(view().name("table-schema"));
+
     }
 
     /**
@@ -81,7 +104,7 @@ public record TableSchemaControllerTest(
                 .andExpect(redirectedUrl("/table-schema"));
     }
 
-    @DisplayName("[GET] 내 스키마 목록 페이지 -> 내 스키마 목록 뷰(정상)")
+    @DisplayName("[GET] 내 스키마 목록 조회(정상)")
     @Test
     void givenAuthenticatedUser_whenRequesting_thenShowMySchemaView() throws Exception {
         //Given
@@ -90,6 +113,7 @@ public record TableSchemaControllerTest(
         mockMvc.perform(get("/table-schema/my-schemas"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(model().attributeExists("tableSchema"))
                 .andExpect(view().name("my-schemas"));
     }
 

@@ -5,6 +5,7 @@ import com.fastcampus.testdata.domain.constant.MockDataType;
 import com.fastcampus.testdata.dto.request.TableSchemaExportRequest;
 import com.fastcampus.testdata.dto.request.TableSchemaRequest;
 import com.fastcampus.testdata.dto.response.SchemaFieldResponse;
+import com.fastcampus.testdata.dto.response.SimpleTableSchemaResponse;
 import com.fastcampus.testdata.dto.response.TableSchemaResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +17,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,15 +31,16 @@ public class TableSchemaController {
     private final ObjectMapper mapper;
 
     @GetMapping("/table-schema")
-    public String tableSchema(Model model) {
-        TableSchemaResponse tableSchema = defaultTableSchema();
+    public String tableSchema(
+            @RequestParam(required = false) String schemaName,
+            Model model) {
+        TableSchemaResponse tableSchema = defaultTableSchema(schemaName);
 
         model.addAttribute("tableSchema", tableSchema);
         model.addAttribute("mockDataType", MockDataType.toObjects());
         model.addAttribute("fileType", Arrays.stream(ExportFileType.values()).toList());
         return "table-schema";
     }
-
 
 
     @PostMapping("/table-schema")
@@ -50,7 +54,9 @@ public class TableSchemaController {
     }
 
     @GetMapping("/table-schema/my-schemas")
-    public String mySchemas() {
+    public String mySchemas(Model model) {
+        List<SimpleTableSchemaResponse> tableSchema = mySampleSchemas();
+        model.addAttribute("tableSchemas", tableSchema);
         return "my-schemas";
     }
 
@@ -78,14 +84,15 @@ public class TableSchemaController {
      * filename=... : 그 파일의 기본 이름은 이걸로 해라.
      */
 
-    private TableSchemaResponse defaultTableSchema() {
+    private TableSchemaResponse defaultTableSchema(String schemaName) {
         return new TableSchemaResponse(
-                "schema",
+                schemaName !=null ? schemaName:"schema_name",
                 "Uno",
                 List.of(
-                        new SchemaFieldResponse("fieldName1", MockDataType.STRING, 1, 0, null, null),
-                        new SchemaFieldResponse("fieldName2", MockDataType.NUMBER, 2, 10, null, null),
-                        new SchemaFieldResponse("fieldName3", MockDataType.NAME, 3, 20, null, null)
+                        new SchemaFieldResponse("id", MockDataType.ROW_NUMBER, 1, 0, null, null),
+                        new SchemaFieldResponse("name", MockDataType.NAME, 2, 10, null, null),
+                        new SchemaFieldResponse("age", MockDataType.NUMBER, 3, 20, null, null),
+                        new SchemaFieldResponse("my_car", MockDataType.CAR, 4, 30, null, null)
                 )
         );
     }
@@ -93,8 +100,16 @@ public class TableSchemaController {
     private String json(Object object) {
         try {
             return mapper.writeValueAsString(object);
-        }catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<SimpleTableSchemaResponse> mySampleSchemas() {
+        return List.of(
+                new SimpleTableSchemaResponse("schema_name1", "Uno", LocalDate.of(2024, 1, 1).atStartOfDay()),
+                new SimpleTableSchemaResponse("schema_name2", "Uno", LocalDate.of(2024, 2, 2).atStartOfDay()),
+                new SimpleTableSchemaResponse("schema_name3", "Uno", LocalDate.of(2024, 3, 3).atStartOfDay())
+        );
     }
 }
