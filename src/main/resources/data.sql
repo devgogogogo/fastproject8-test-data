@@ -1,5 +1,5 @@
 -- 예제 테이블 스키마
-insert into table_schema (id, schema_name, user_id, exported_at, created_at, created_by, modified_at, modified_by)
+INSERT INTO table_schema (id, schema_name, user_id, exported_at, created_at, created_by, modified_at, modified_by)
 values
     (1, 'test_schema1', 'djkeh', null, now(), 'uno', now(), 'uno')
 ;

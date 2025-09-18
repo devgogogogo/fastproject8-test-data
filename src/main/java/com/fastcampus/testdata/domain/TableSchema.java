@@ -20,7 +20,7 @@ import java.util.Set;
 
 @Getter
 @ToString(callSuper = true)
-@Table(
+@Table(name = "table_schema",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"userId", "schemaName"})
         },

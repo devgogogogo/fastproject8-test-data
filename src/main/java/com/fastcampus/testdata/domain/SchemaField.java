@@ -15,6 +15,7 @@ import java.util.Objects;
 
 @Getter
 @ToString(callSuper = true)
+@Table(name = "schema_field")
 @Entity
 public class SchemaField extends AuditingFields {
 

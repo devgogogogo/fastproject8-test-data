@@ -16,7 +16,7 @@ import java.util.Objects;
  */
 @Getter
 @ToString
-@Table(uniqueConstraints = {
+@Table(name = "mock_data", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"mockDataType", "mockDataValue"})
 })
 @Entity
