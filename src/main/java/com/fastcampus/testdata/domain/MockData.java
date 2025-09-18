@@ -4,7 +4,6 @@ package com.fastcampus.testdata.domain;
 import com.fastcampus.testdata.domain.constant.MockDataType;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
